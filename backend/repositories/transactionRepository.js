@@ -6,11 +6,16 @@ const getAllTransactions = async (month, page, perPage, search) => {
   };
 
   if (search) {
-    filter.$or = [
-      { title: new RegExp(search, 'i') },
-      { description: new RegExp(search, 'i') },
-      { price: new RegExp(search, 'i') },
-    ];
+    const searchNumber = Number(search);
+
+    if (!isNaN(searchNumber)) {
+      filter.price = searchNumber;
+    } else {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+      ];
+    }
   }
 
   const options = {

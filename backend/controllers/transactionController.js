@@ -9,7 +9,7 @@ const {
 } = require('../services/transactionService');
 
 const getTransactions = asyncHandler(async (req, res, next) => {
-  const { month = 3, page = 1, perPage = 10, search } = req.query;
+  const { month = 3, page = 1, perPage = 10, search = '' } = req.query;
 
   if (month < 1 || month > 12) {
     return next(new AppError('Month must be between 1 and 12', 400));
