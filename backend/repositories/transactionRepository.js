@@ -1,9 +1,12 @@
 const Transaction = require('../models/transaction');
 
 const getAllTransactions = async (month, page, perPage, search) => {
-  const filter = {
-    $expr: { $eq: [{ $month: '$dateOfSale' }, month] },
-  };
+  let filter = {};
+  if (month) {
+    filter = {
+      $expr: { $eq: [{ $month: '$dateOfSale' }, month] },
+    };
+  }
 
   if (search) {
     const searchNumber = Number(search);
@@ -30,15 +33,23 @@ const getTransactionStatistics = async (month) => {
   const totalSaleAmount = await Transaction.aggregate([
     {
       $match: {
-        $expr: { $eq: [{ $month: '$dateOfSale' }, month] },
+        $expr: { $eq: [{ $month: '$dateOfSale' }, parseInt(month)] },
       },
     },
     {
       $group: {
         _id: null,
         totalSale: { $sum: '$price' },
-        soldItems: { $sum: { $cond: ['$sold', 1, 0] } },
-        notSoldItems: { $sum: { $cond: ['$sold', 0, 1] } },
+        soldItems: { $sum: { $cond: [{ $eq: ['$sold', true] }, 1, 0] } },
+        notSoldItems: { $sum: { $cond: [{ $eq: ['$sold', false] }, 1, 0] } },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        totalSale: 1,
+        soldItems: 1,
+        notSoldItems: 1,
       },
     },
   ]);
